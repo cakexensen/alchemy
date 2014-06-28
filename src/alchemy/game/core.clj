@@ -1,23 +1,30 @@
 (ns alchemy.game.core
   (:use [alchemy.state]))
 
+(defn get-time
+  "gets the current time"
+  []
+  (.getTime (java.util.Date.))
+
 (defn process
   "processes the next state"
   [state]
   ; do stuff here
-  state)
+  (assoc state :time (get-time)))
 
 (defn await-tick
   "waits until the next tick should be processed"
   [state]
   ; wait-time = state-time + tick-delta - current-time
   (let [state-time (:time state)
-        current-time (.getTime (java.util.Date.))
+        current-time (get-time))
         ticks-per-second (:ticks-per-second state)
         ; tick-delta: 1000 milliseconds / ticks-per-second
         tick-delta (/ 1000 ticks-per-second)
         next-tick (+ state-time tick-delta)
-        wait-time (- next-tick current-time)]
+        wait-time (- next-tick current-time)
+        ; do something if negative wait-time?
+        ]
     (Thread/sleep wait-time)))
 
 (defn run-game

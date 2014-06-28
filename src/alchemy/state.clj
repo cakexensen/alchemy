@@ -5,5 +5,6 @@
   []
   {:entities []
    :space nil
+   :time 0
    :ticks-per-second 60
    :frames-per-second 60})
