@@ -25,14 +25,14 @@
 (defn get-space
   "gets the entities at a specified location"
   [space x z]
-  (when (bounds-check? space)
+  (when (bounds-check? space x z)
     ; get at [x z] or an empty vec
     (get space [x z] [])))
 
 (defn insert-space
   "inserts an entity at a specified location"
   [space x z entity]
-  (when (bounds-check? space)
+  (when (bounds-check? space x z)
     (let [; get the entities at [x z]
           old-xz-entities (get-space space [x z])
           ; add the entity
