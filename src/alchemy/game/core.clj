@@ -9,8 +9,12 @@
 (defn process
   "processes the next state"
   [state]
-  ; do stuff here
-  (assoc state :time (get-time)))
+  (let [; get the director responsible for updating the state
+        director (:director state)
+        ; process the state
+        state (director state)]
+    ; update the computation timestamp on the state
+    (assoc state :time (get-time))))
 
 (defn await-tick
   "waits until the next tick should be processed"

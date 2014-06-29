@@ -1,12 +1,13 @@
 (ns alchemy.core
-  (:use [alchemy.state]
-        [alchemy.game.core]))
+  (:require [alchemy.state :as state]
+            [alchemy.game.core :as game]
+            [alchemy.game.directors.init :as init]))
 
 (defn -main
   "starts the game"
   [& args]
   (let [; initialize data shared by the engine processes
-        state (new-state)
+        state (state/new-state init/director)
         shared-state (atom state)]
     ; run the engine processes
-    (run-game shared-state)))
+    (game/run-game shared-state)))
