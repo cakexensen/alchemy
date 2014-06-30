@@ -4,7 +4,7 @@
 (defn get-time
   "gets the current time"
   []
-  (.getTime (java.util.Date.))
+  (.getTime (java.util.Date.)))
 
 (defn process
   "processes the next state"
@@ -21,7 +21,7 @@
   [state]
   ; wait-time = state-time + tick-delta - current-time
   (let [state-time (:time state)
-        current-time (get-time))
+        current-time (get-time)
         ticks-per-second (:ticks-per-second state)
         ; tick-delta: 1000 milliseconds / ticks-per-second
         tick-delta (/ 1000 ticks-per-second)
