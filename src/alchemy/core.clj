@@ -1,6 +1,7 @@
 (ns alchemy.core
   (:require [alchemy.state :as state]
             [alchemy.game.core :as game]
+            [alchemy.gui.core :as gui]
             [alchemy.game.directors.core :as dir-core]
             [alchemy.game.directors.game :as dir-game]))
 
@@ -11,4 +12,5 @@
         state (dir-core/change-director (state/new-state) dir-game/director)
         shared-state (atom state)]
     ; run the engine processes
+    (future (gui/run-gui shared-state))
     (game/run-game shared-state)))
