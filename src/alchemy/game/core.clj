@@ -9,12 +9,13 @@
 (defn process
   "processes the next state"
   [state]
-  (let [; get the director responsible for updating the state
+  (let [; update the computation timestamp on the state
+        state (assoc state :time (get-time))
+        ; get the director responsible for updating the state
         director (:director state)
         ; process the state
         state (director state)]
-    ; update the computation timestamp on the state
-    (assoc state :time (get-time))))
+    state))
 
 (defn await-tick
   "waits until the next tick should be processed"
@@ -27,8 +28,7 @@
         tick-delta (/ 1000 ticks-per-second)
         next-tick (+ state-time tick-delta)
         wait-time (- next-tick current-time)
-        ; do something if negative wait-time?
-        ]
+        wait-time (Math/max (double wait-time) (double 0))]
     (Thread/sleep wait-time)))
 
 (defn run-game
@@ -38,10 +38,6 @@
     (let [next-state (process state)]
       ; update shared-state
       (reset! shared-state next-state)
-      ; test! print entity data
-      (println "printing entities")
-      (loop [entity (:entities state)]
-        (println entity))
       ; wait until next tick before recurring
       (await-tick next-state)
       (recur next-state))))
