@@ -38,6 +38,10 @@
     (let [next-state (process state)]
       ; update shared-state
       (reset! shared-state next-state)
+      ; test! print entity data
+      (println "printing entities")
+      (loop [entity (:entities state)]
+        (println entity))
       ; wait until next tick before recurring
       (await-tick next-state)
       (recur next-state))))

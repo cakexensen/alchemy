@@ -2,9 +2,9 @@
 
 (defn new-state
   "creates a new game state"
-  [director]
+  []
   {; control and directing
-   :director director ; director is responsible for state updates
+   :director nil ; director is responsible for state updates
    ; global collections
    :entities []
    :space nil
