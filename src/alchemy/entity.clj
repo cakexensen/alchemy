@@ -4,8 +4,9 @@
 
 (defn new-triangle
   "creates a new triangle"
-  [[v1x v1y] [v2x v2y] [v3x v3y]]
+  [id [v1x v1y] [v2x v2y] [v3x v3y]]
   ; store triangle vertices
-  {:vertices [[v1x v1y]
+  {:id id
+   :vertices [[v1x v1y]
               [v2x v2y]
               [v3x v3y]]})

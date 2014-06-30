@@ -31,6 +31,6 @@
 (defmethod core/load-director director
   [state]
   ; !! testing with opengl primatives before making real entities
-  (let [triangle (entity/new-triangle [0 0.5] [0.5 -0.5] [-0.5 -0.5])
+  (let [triangle (entity/new-triangle :triangle [0 0.5] [0.5 -0.5] [-0.5 -0.5])
         state (assoc state :entities [triangle])]
     state))
