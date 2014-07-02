@@ -12,5 +12,5 @@
         state (dir-core/change-director (state/new-state) dir-game/director)
         shared-state (atom state)]
     ; run the engine processes
-    (future (gui/run-gui shared-state))
-    (game/run-game shared-state)))
+    (future (game/run-game shared-state))
+    (gui/run-gui shared-state)))
