@@ -4,13 +4,13 @@
 
 (defn simple-test-rotate
   "test! simple rotation around origin"
-  [[x y] angle]
+  [[x y z] angle]
   ; yoinked from here http://stackoverflow.com/a/12161405/1404338
   (let [new-x (- (* x (Math/cos angle))
                  (* y (Math/sin angle)))
         new-y (+ (* x (Math/sin angle))
                  (* y (Math/cos angle)))]
-    [new-x new-y]))
+    [new-x new-y z]))
 
 (defn rotate-entity
   "test! simple rotation of entity vertices"

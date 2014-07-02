@@ -7,6 +7,7 @@
   [id [v1x v1y] [v2x v2y] [v3x v3y]]
   ; store triangle vertices
   {:id id
-   :vertices [[v1x v1y]
-              [v2x v2y]
-              [v3x v3y]]})
+   :type :triangle
+   :vertices [[v1x v1y 0]
+              [v2x v2y 0]
+              [v3x v3y 0]]})
