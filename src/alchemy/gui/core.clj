@@ -3,54 +3,87 @@
            [java.nio FloatBuffer]
            [org.lwjgl BufferUtils]))
 
+(defmacro with-vao
+  "performs actions while a particular vertex array is loaded"
+  [vao-id & body]
+  `(let [_# (GL30/glBindVertexArray ~vao-id) ; bind array
+         result# (do ~@body)]
+     (GL30/glBindVertexArray 0) ; unbind array
+     result#))
+
+(defmacro with-vbo
+  "performs actions while a particular vertex buffer is loaded"
+  [vbo-id & body]
+  `(let [_# (GL15/glBindBuffer GL15/GL_ARRAY_BUFFER ~vbo-id) ; bind buffer
+         result# (do ~@body)]
+     (GL15/glBindBuffer GL15/GL_ARRAY_BUFFER 0) ; unbind buffer
+     result#))
+
+(defmacro with-attrib
+  "performs actions while a particular vertex array attribute is loaded"
+  [index & body]
+  `(let [_# (GL20/glEnableVertexAttribArray ~index) ; select attrib
+         result# (do ~@body)]
+     (GL20/glDisableVertexAttribArray ~index) ; deselect attrib
+     result#))
+
+(defn vertices-to-buffer
+  "converts vertex data to buffer usable by vbo"
+  [vertices]
+  (let [vert-array (map float (flatten vertices)) ; force to float array
+        buff (BufferUtils/createFloatBuffer (count vert-array))]
+    ; add each vertex part to the buffer
+    (doseq [va vert-array] (.put buff va))
+    ; flip it because i guess you're supposed to
+    (.flip buff)
+    buff))
+
+(defn add-vertices-to-buffer
+  "adds vertices (pairs of vertex coords) to a buffer"
+  [vertices]
+  (GL15/glBufferData GL15/GL_ARRAY_BUFFER
+                     (vertices-to-buffer vertices)
+                     GL15/GL_STREAM_DRAW))
+
+(defn update-vertices-in-buffer
+  "updates vertices (pairs of vertex coords) in a buffer"
+  [vertices]
+  (GL15/glBufferSubData GL15/GL_ARRAY_BUFFER
+                        0 ; index?
+                        (vertices-to-buffer vertices)))
+
+(defn add-buffer-to-vertex-attributes
+  "adds a vbo to a vao's attributes"
+  [] ; might need to parameterize index, size, type, etc
+  (let [index 0
+        size 3
+        type GL11/GL_FLOAT
+        ; not sure what the other params are, tutorial uses them
+        ]
+    (GL20/glVertexAttribPointer index size type false 0 0)))
+
 (defn add-buffer
   "adds an entity buffer"
   [buffers entity]
-  (let [; set up array
-        vao-id (GL30/glGenVertexArrays)
-        _ (GL30/glBindVertexArray vao-id)
-        ; set up buffer
-        vbo-id (GL15/glGenBuffers)
-        _ (GL15/glBindBuffer GL15/GL_ARRAY_BUFFER vbo-id)
-        entity-vertices (map float (flatten (:vertices entity)))
-        vertices (BufferUtils/createFloatBuffer (count entity-vertices))
-        _ (doseq [ev entity-vertices] (.put vertices ev))
-        _ (.flip vertices)
-        _ (GL15/glBufferData GL15/GL_ARRAY_BUFFER
-                             vertices
-                             GL15/GL_STREAM_DRAW)
-        ; put buffer into array attributes
-        index 0 ; first slot
-        size 3 ; vertex components per point - calculate later?
-        type GL11/GL_FLOAT ; type of vertex values
-        ; other params are unknown to me at this moment, just following tut
-        _ (GL20/glVertexAttribPointer index size type false 0 0)
-        ; deselect buffer and array
-        _ (GL15/glBindBuffer GL15/GL_ARRAY_BUFFER 0)
-        _ (GL30/glBindVertexArray 0)
-        buffer {:type (:type entity)
-                :vbo-id vbo-id
-                :vao-id vao-id}]
-    ; add buffer for entity
-    (assoc buffers (:id entity) buffer)))
+  (let [vao-id (GL30/glGenVertexArrays)]
+    (with-vao vao-id
+      (let [vbo-id (GL15/glGenBuffers)]
+        (with-vbo vbo-id
+          (add-vertices-to-buffer (:vertices entity))
+          (add-buffer-to-vertex-attributes))
+        ; add buffer meta data for the entity
+        (assoc buffers (:id entity) {:type (:type entity)
+                                     :vao-id vao-id
+                                     :vbo-id vbo-id})))))
 
 (defn update-buffer
   "updates an entity buffer"
   [buffers entity]
-  (when (and (seq buffers)
-             entity)
+  ; if we have valid buffers and entity
+  (when (and (seq buffers) entity)
     (let [buffer (buffers (:id entity))]
-      ; bind buffer
-      (GL15/glBindBuffer GL15/GL_ARRAY_BUFFER (:vbo-id buffer))
-      ; update vertices in buffer
-      (let [entity-vertices (map float (flatten (:vertices entity)))
-            length (count entity-vertices)
-            vertices (BufferUtils/createFloatBuffer length)]
-        (doseq [ev entity-vertices] (.put vertices ev))
-        (.flip vertices)
-        (GL15/glBufferSubData GL15/GL_ARRAY_BUFFER 0 vertices))
-      ; unbind buffer
-      (GL15/glBindBuffer GL15/GL_ARRAY_BUFFER 0))))
+      (with-vbo (:vbo-id buffer)
+        (update-vertices-in-buffer (:vertices entity))))))
 
 (defn remove-buffer
   "removes an entity buffer"
@@ -78,13 +111,14 @@
   "manages opengl vertex array/buffer objects"
   [state buffers]
   (let [entities (:entities state)
+        buffer-keys (keys buffers)
         ; remove missing entities from buffers
-        removed-ids (filter #(not-contains? (map :id entities) %) (keys buffers))
+        removed-ids (filter #(not-contains? (map :id entities) %) buffer-keys)
         buffers (reduce remove-buffer buffers removed-ids)
         ; update existing buffers that remain
         _ (doseq [entity entities] (update-buffer buffers entity))
         ; add new entities to buffers
-        new-entities (filter #(not-contains? (keys buffers) (:id %)) entities)
+        new-entities (filter #(not-contains? buffer-keys (:id %)) entities)
         buffers (reduce add-buffer buffers new-entities)]
     buffers))
 
@@ -95,14 +129,10 @@
   "renders the game state"
   [state buffers]
   (doseq [[key buffer] buffers]
-    ; bind the array
-    (GL30/glBindVertexArray (:vao-id buffer))
-    (GL20/glEnableVertexAttribArray 0)
-    ; draw the vertices
-    ((vertex-renderers (:type buffer)))
-    ; deselect
-    (GL20/glDisableVertexAttribArray 0)
-    (GL30/glBindVertexArray 0)))
+    (with-vao (:vao-id buffer)
+      (with-attrib 0
+        ; draw the vertices
+        ((vertex-renderers (:type buffer)))))))
 
 (defn run-gui
   "runs a lwjgl window application and renders the state"
