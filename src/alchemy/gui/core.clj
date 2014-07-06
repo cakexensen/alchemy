@@ -134,28 +134,60 @@
         ; draw the vertices
         ((vertex-renderers (:type buffer)))))))
 
-(defn run-gui
-  "runs a lwjgl window application and renders the state"
-  [shared-state]
-  ; set up the display
+(defn setup-display
+  "sets up the lwjgl/opengl display"
+  [width height [color-red color-green color-blue]]
   (let [pixel (PixelFormat.)
+        ; specify which opengl version to use
         context (. (ContextAttribs. 3 2)
                    (withForwardCompatible true)
                    (withProfileCore true))]
-    (Display/setDisplayMode (DisplayMode. 800 600))
+    ; create window display
+    (Display/setDisplayMode (DisplayMode. width height))
     (Display/create pixel context))
-  (GL11/glClearColor 0.4 0.6 0.9 0)
-  (GL11/glViewport 0 0 800 600)
-  ; loop for each frame
+  ; set background color
+  (GL11/glClearColor color-red color-green color-blue 0)
+  ; set viewport (change this for scaling?)
+  (GL11/glViewport 0 0 width height))
+
+(defn await-frame
+  "waits until the next frame should be processed"
+  [state]
+  (Display/sync (:frames-per-second state)))
+
+(defn clear-screen
+  "clears the screen in preparation of the next rendering"
+  []
+  ;; clear screen - get bg color from state?
+  (GL11/glClear GL11/GL_COLOR_BUFFER_BIT))
+
+(defn update-display
+  "updates the display with the rendered graphics"
+  []
+  (Display/update))
+
+(defn display-closed?
+  "indicates if the display has been closed"
+  []
+  (Display/isCloseRequested))
+
+(defn close-display
+  "closes the display and cleans up its resources"
+  []
+  (Display/destroy))
+
+(defn run-gui
+  "runs a lwjgl window application and renders the state"
+  [shared-state]
+  (setup-display 800 600 [0 0 0])
+  ; loop for each frame using the state and gl buffers
   (loop [state @shared-state
          buffers {}]
-    (Display/sync (:frames-per-second state))
-    ;; clear screen - get bg color from state?
-    (GL11/glClear GL11/GL_COLOR_BUFFER_BIT)
+    (await-frame state)
+    (clear-screen)
     (let [buffers (manage-buffers state buffers)]
       (render state buffers)
-      (Display/update)
-      (when (not (Display/isCloseRequested))
+      (update-display)
+      (when-not (display-closed?)
         (recur @shared-state buffers))))
-  ; clean up before quitting
-  (Display/destroy))
+  (close-display))
