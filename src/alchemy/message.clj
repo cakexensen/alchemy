@@ -12,11 +12,15 @@
 
 (defn send
   "sends a message to a mailbox"
-  [{:keys [system address] :as mailbox} recipient message]
-  ; attach address as sender of message?
-  (let [old-messages (get @system recipient [])
-        new-messages (conj old-messages message)]
-    (swap! system assoc recipient new-messages)))
+  ([{:keys [system address] :as mailbox} recipient tag data]
+     ; attach address as sender of message?
+     (let [message {:tag tag :data data}
+           old-messages (get @system recipient [])
+           new-messages (conj old-messages message)]
+       (swap! system assoc recipient new-messages)))
+  ([mailbox recipient tag]
+     ; for sending redundant signal messages like (.. :close :close)
+     (send mailbox recipient tag tag)))
 
 (defn receive
   "receives the messages in a mailbox"

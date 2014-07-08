@@ -15,7 +15,7 @@
       ; process first message
       (let [message (first messages)
             ; update data based on message
-            data (case message
+            data (case (:tag message)
                    :close (assoc data :continue? false)
                    data)]
         (recur data (rest messages))))))
