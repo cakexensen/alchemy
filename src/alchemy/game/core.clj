@@ -1,6 +1,8 @@
 (ns alchemy.game.core
   (:use [alchemy.state])
-  (:require [alchemy.message :as message]))
+  (:require [alchemy.message :as message]
+            [alchemy.game.directors.core :as dir-core]
+            [alchemy.game.directors.game :as dir-game]))
 
 (defn get-time
   "gets the current time"
@@ -49,15 +51,23 @@
 
 (defn run-game
   "continuously runs the game logic"
-  [shared-state mailbox]
-  (loop [state @shared-state]
-    (let [next-state (process-messages state mailbox)
-          next-state (process next-state)]
-      (if (:continue? state)
-        (do
-          ; update shared-state
-          (reset! shared-state next-state)
-          ; wait until next tick before recurring
-          (await-tick next-state)
-          (recur next-state))
-        (message/send mailbox :gui :close)))))
+  [mailbox]
+  ; initialize state
+  (let [state (new-state)
+        ; transition state to initial director
+        state (dir-core/change-director state dir-game/director)
+        shared-state (atom state)]
+    ; share state with gui
+    (message/send mailbox :gui :state shared-state)
+    ; begin game loop
+    (loop [state @shared-state]
+      (let [next-state (process-messages state mailbox)
+            next-state (process next-state)]
+        (if (:continue? state)
+          (do
+            ; update shared-state
+            (reset! shared-state next-state)
+            ; wait until next tick before recurring
+            (await-tick next-state)
+            (recur next-state))
+          (message/send mailbox :gui :close))))))

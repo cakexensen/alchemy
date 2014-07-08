@@ -16,26 +16,29 @@
       (let [message (first messages)
             ; update data based on message
             data (case (:tag message)
+                   :state (assoc data :shared-state (:data message))
                    :close (assoc data :continue? false)
                    data)]
         (recur data (rest messages))))))
 
 (defn run-gui
   "runs a lwjgl window application and renders the state"
-  [shared-state mailbox]
+  [mailbox]
   (display/setup-display 800 600 [0 0 0])
-  ; loop for each frame using the state and gl buffers
-  (loop [state @shared-state
-         data {:continue? true}
+  ; loop for each frame using the state and relevant data
+  (loop [state nil
+         data {:continue? true ; set false to stop processing
+               :shared-state (atom nil) ; replaced with state from game
+               }
          buffers {}]
-    (display/await-frame state)
-    (display/clear-screen)
     (let [data (process-messages data mailbox)
           buffers (buffer/manage-buffers state buffers)]
+      (display/await-frame state)
+      (display/clear-screen)
       (render/render state buffers)
       (display/update-display)
       (if (and (not (display/display-closed?))
                (:continue? data))
-        (recur @shared-state data buffers)
+        (recur @(:shared-state data) data buffers)
         (message/send mailbox :game :close))))
   (display/close-display))

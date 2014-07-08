@@ -20,7 +20,7 @@
 (defn await-frame
   "waits until the next frame should be processed"
   [state]
-  (Display/sync (:frames-per-second state)))
+  (Display/sync (get state :frames-per-second 60)))
 
 (defn clear-screen
   "clears the screen in preparation of the next rendering"
