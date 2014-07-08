@@ -5,6 +5,7 @@
   []
   {; control and directing
    :director nil ; director is responsible for state updates
+   :continue? true ; set false to end the program
    ; global collections
    :entities []
    :space nil

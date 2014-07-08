@@ -1,10 +1,26 @@
 (ns alchemy.game.core
-  (:use [alchemy.state]))
+  (:use [alchemy.state])
+  (:require [alchemy.message :as message]))
 
 (defn get-time
   "gets the current time"
   []
   (.getTime (java.util.Date.)))
+
+(defn process-messages
+  "processes any received messages"
+  [state mailbox]
+  (loop [state state
+         messages (message/receive mailbox)]
+    (if (empty? messages)
+      state
+      ; process first message
+      (let [message (first messages)
+            ; update state based on message
+            state (case message
+                    :close (assoc state :continue? false)
+                    state)]
+        (recur state (rest messages))))))
 
 (defn process
   "processes the next state"
@@ -33,11 +49,15 @@
 
 (defn run-game
   "continuously runs the game logic"
-  [shared-state]
+  [shared-state mailbox]
   (loop [state @shared-state]
-    (let [next-state (process state)]
-      ; update shared-state
-      (reset! shared-state next-state)
-      ; wait until next tick before recurring
-      (await-tick next-state)
-      (recur next-state))))
+    (let [next-state (process-messages state mailbox)
+          next-state (process next-state)]
+      (if (:continue? state)
+        (do
+          ; update shared-state
+          (reset! shared-state next-state)
+          ; wait until next tick before recurring
+          (await-tick next-state)
+          (recur next-state))
+        (message/send mailbox :gui :close)))))
