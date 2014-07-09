@@ -14,17 +14,34 @@
 
 (defn rotate-entity
   "test! simple rotation of entity vertices"
-  [entity]
+  [entity speed]
   (let [vertices (:vertices entity)
-        vertices (map #(simple-test-rotate % 0.01) vertices)
+        vertices (map #(simple-test-rotate % speed) vertices)
         entity (assoc entity :vertices vertices)]
     entity))
+
+(defn process-inputs
+  "applies appropriate state changes based on the inputs"
+  [state inputs]
+  (if (empty? inputs)
+    state
+    (let [input (first inputs)
+          pressed? (:pressed? input)
+          direction (if pressed? + -)
+          state (case (:key input)
+                  :key-left (update-in state [:temp-direction] direction 0.01)
+                  :key-right (update-in state [:temp-direction] direction -0.01)
+                  state)]
+      (recur state (rest inputs)))))
 
 (defn director
   "game director: plays the game, moves entities, handles logic"
   [state]
-  (let [entities (:entities state)
-        entities (map rotate-entity entities)
+  (let [inputs (:inputs state)
+        state (process-inputs state inputs)
+        state (assoc state :inputs [])
+        entities (:entities state)
+        entities (map #(rotate-entity % (:temp-direction state)) entities)
         state (assoc state :entities entities)]
     state))
 

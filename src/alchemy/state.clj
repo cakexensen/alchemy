@@ -6,6 +6,8 @@
   {; control and directing
    :director nil ; director is responsible for state updates
    :continue? true ; set false to end the program
+   ; temporary! fields for testing
+   :temp-direction 0
    ; global collections
    :entities []
    :space nil

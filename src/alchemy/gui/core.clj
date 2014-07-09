@@ -2,6 +2,7 @@
   (:require [alchemy.gui.lwjgl.display :as display]
             [alchemy.gui.lwjgl.render :as render]
             [alchemy.gui.lwjgl.buffer :as buffer]
+            [alchemy.gui.lwjgl.input :as input]
             [alchemy.message :as message]))
 
 ; copied this from game, consider combining the similarities somehow
@@ -32,7 +33,9 @@
                }
          buffers {}]
     (let [data (process-messages data mailbox)
-          buffers (buffer/manage-buffers state buffers)]
+          buffers (buffer/manage-buffers state buffers)
+          inputs (input/keyboard-events)]
+      (message/send mailbox :game :inputs inputs)
       (display/await-frame state)
       (display/clear-screen)
       (render/render state buffers)

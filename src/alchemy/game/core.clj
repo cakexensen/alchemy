@@ -20,6 +20,8 @@
       (let [message (first messages)
             ; update state based on message
             state (case (:tag message)
+                    ;; inputs - add onto the input processing queue
+                    :inputs (update-in state [:inputs] concat (:data message))
                     :close (assoc state :continue? false)
                     state)]
         (recur state (rest messages))))))
