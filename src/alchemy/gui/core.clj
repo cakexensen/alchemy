@@ -5,7 +5,7 @@
             [alchemy.gui.lwjgl.input :as input]
             [alchemy.message :as message]))
 
-; copied this from game, consider combining the similarities somehow
+;; copied this from game, consider combining the similarities somehow
 (defn process-messages
   "processes any received messages"
   [data mailbox]
@@ -13,9 +13,9 @@
          messages (message/receive mailbox)]
     (if (empty? messages)
       data
-      ; process first message
+      ;; process first message
       (let [message (first messages)
-            ; update data based on message
+            ;; update data based on message
             data (case (:tag message)
                    :state (assoc data :shared-state (:data message))
                    :close (assoc data :continue? false)
@@ -26,7 +26,7 @@
   "runs a lwjgl window application and renders the state"
   [mailbox]
   (display/setup-display 800 600 [0 0 0])
-  ; loop for each frame using the state and relevant data
+  ;; loop for each frame using the state and relevant data
   (loop [state nil
          data {:continue? true ; set false to stop processing
                :shared-state (atom nil) ; replaced with state from game

@@ -16,9 +16,9 @@
          messages (message/receive mailbox)]
     (if (empty? messages)
       state
-      ; process first message
+      ;; process first message
       (let [message (first messages)
-            ; update state based on message
+            ;; update state based on message
             state (case (:tag message)
                     ;; inputs - add onto the input processing queue
                     :inputs (update-in state [:inputs] concat (:data message))
@@ -29,22 +29,22 @@
 (defn process
   "processes the next state"
   [state]
-  (let [; update the computation timestamp on the state
+  (let [;; update the computation timestamp on the state
         state (assoc state :time (get-time))
-        ; get the director responsible for updating the state
+        ;; get the director responsible for updating the state
         director (:director state)
-        ; process the state
+        ;; process the state
         state (director state)]
     state))
 
 (defn await-tick
   "waits until the next tick should be processed"
   [state]
-  ; wait-time = state-time + tick-delta - current-time
+  ;; wait-time = state-time + tick-delta - current-time
   (let [state-time (:time state)
         current-time (get-time)
         ticks-per-second (:ticks-per-second state)
-        ; tick-delta: 1000 milliseconds / ticks-per-second
+        ;; tick-delta: 1000 milliseconds / ticks-per-second
         tick-delta (/ 1000 ticks-per-second)
         next-tick (+ state-time tick-delta)
         wait-time (- next-tick current-time)
@@ -54,22 +54,22 @@
 (defn run-game
   "continuously runs the game logic"
   [mailbox]
-  ; initialize state
+  ;; initialize state
   (let [state (new-state)
-        ; transition state to initial director
+        ;; transition state to initial director
         state (dir-core/change-director state dir-game/director)
         shared-state (atom state)]
-    ; share state with gui
+    ;; share state with gui
     (message/send mailbox :gui :state shared-state)
-    ; begin game loop
+    ;; begin game loop
     (loop [state @shared-state]
       (let [next-state (process-messages state mailbox)
             next-state (process next-state)]
         (if (:continue? state)
           (do
-            ; update shared-state
+            ;; update shared-state
             (reset! shared-state next-state)
-            ; wait until next tick before recurring
+            ;; wait until next tick before recurring
             (await-tick next-state)
             (recur next-state))
           (message/send mailbox :gui :close))))))

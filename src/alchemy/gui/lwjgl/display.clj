@@ -5,16 +5,16 @@
   "sets up the lwjgl/opengl display"
   [width height [color-red color-green color-blue]]
   (let [pixel (PixelFormat.)
-        ; specify which opengl version to use
+        ;; specify which opengl version to use
         context (. (ContextAttribs. 3 2)
                    (withForwardCompatible true)
                    (withProfileCore true))]
-    ; create window display
+    ;; create window display
     (Display/setDisplayMode (DisplayMode. width height))
     (Display/create pixel context))
-  ; set background color
+  ;; set background color
   (GL11/glClearColor color-red color-green color-blue 0)
-  ; set viewport (change this for scaling?)
+  ;; set viewport (change this for scaling?)
   (GL11/glViewport 0 0 width height))
 
 (defn await-frame

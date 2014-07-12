@@ -5,7 +5,7 @@
 (defn simple-test-rotate
   "test! simple rotation around origin"
   [[x y z] angle]
-  ; yoinked from here http://stackoverflow.com/a/12161405/1404338
+  ;; yoinked from here http://stackoverflow.com/a/12161405/1404338
   (let [new-x (- (* x (Math/cos angle))
                  (* y (Math/sin angle)))
         new-y (+ (* x (Math/sin angle))
@@ -47,7 +47,7 @@
 
 (defmethod core/load-director director
   [state]
-  ; !! testing with opengl primatives before making real entities
+  ;; !! testing with opengl primatives before making real entities
   (let [triangle (entity/new-triangle [0 0.5] [0.5 -0.5] [-0.5 -0.5])
         state (assoc state :entities [triangle])]
     state))

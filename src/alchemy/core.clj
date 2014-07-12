@@ -6,9 +6,9 @@
 (defn -main
   "starts the game"
   [& args]
-  (let [; initialize data shared by the engine processes
+  (let [;; initialize data shared by the engine processes
         message-system (message/message-system)]
-    ; run the engine processes
+    ;; run the engine processes
     (future (game/run-game (message/mailbox message-system :game)))
     (gui/run-gui (message/mailbox message-system :gui))
     (shutdown-agents)))

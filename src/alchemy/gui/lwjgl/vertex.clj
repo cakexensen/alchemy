@@ -49,9 +49,9 @@
   [vertices]
   (let [vert-array (map float (flatten vertices)) ; force to float array
         buff (BufferUtils/createFloatBuffer (count vert-array))]
-    ; add each vertex part to the buffer
+    ;; add each vertex part to the buffer
     (doseq [va vert-array] (.put buff va))
-    ; flip it because i guess you're supposed to
+    ;; flip it because i guess you're supposed to
     (.flip buff)
     buff))
 
@@ -75,7 +75,7 @@
   (let [index 0
         size 3
         type GL11/GL_FLOAT
-        ; not sure what the other params are, tutorial uses them
+        ;; not sure what the other params are, tutorial uses them
         ]
     (GL20/glVertexAttribPointer index size type false 0 0)))
 

@@ -11,5 +11,5 @@
   (doseq [[key buffer] buffers]
     (vertex/with-vao (:vao-id buffer)
       (vertex/with-attrib 0
-        ; draw the vertices
+        ;; draw the vertices
         ((vertex-renderers (:type buffer)))))))

@@ -13,7 +13,7 @@
         (vertex/with-vbo vbo-id
           (vertex/add-vertices-to-buffer (:vertices entity))
           (vertex/add-buffer-to-vertex-attributes))
-        ; add buffer meta data for the entity
+        ;; add buffer meta data for the entity
         (assoc buffers (:id entity) {:type (:type entity)
                                      :vao-id vao-id
                                      :vbo-id vbo-id})))))
@@ -21,7 +21,7 @@
 (defn update-buffer
   "updates an entity buffer"
   [buffers entity]
-  ; if we have valid buffers and entity
+  ;; if we have valid buffers and entity
   (when (and (seq buffers) entity)
     (let [buffer (buffers (:id entity))]
       (vertex/with-vbo (:vbo-id buffer)
@@ -33,15 +33,15 @@
   (let [buffer (buffers id)
         vbo-id (:vbo-id buffer)
         vao-id (:vao-id buffer)]
-    ; disable buffer index from array attrib list
+    ;; disable buffer index from array attrib list
     (GL20/glDisableVertexAttribArray 0)
-    ; delete buffer
+    ;; delete buffer
     (GL15/glBindBuffer GL15/GL_ARRAY_BUFFER 0)
     (GL15/glDeleteBuffers vbo-id)
-    ; delete array
+    ;; delete array
     (GL30/glBindVertexArray 0)
     (GL30/glDeleteVertexArrays vao-id)
-    ; remove from buffers
+    ;; remove from buffers
     (dissoc buffers id)))
 
 (defn not-contains?
@@ -54,12 +54,12 @@
   [state buffers]
   (let [entities (:entities state)
         buffer-keys (keys buffers)
-        ; remove missing entities from buffers
+        ;; remove missing entities from buffers
         removed-ids (filter #(not-contains? (map :id entities) %) buffer-keys)
         buffers (reduce remove-buffer buffers removed-ids)
-        ; update existing buffers that remain
+        ;; update existing buffers that remain
         _ (doseq [entity entities] (update-buffer buffers entity))
-        ; add new entities to buffers
+        ;; add new entities to buffers
         new-entities (filter #(not-contains? buffer-keys (:id %)) entities)
         buffers (reduce add-buffer buffers new-entities)]
     buffers))

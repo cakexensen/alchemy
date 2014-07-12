@@ -9,7 +9,7 @@
     (if (= old-director new-director)
       state ; don't change anything since director didn't change
       (-> state
-          ; unload old, load new
-          ;(unload-director)
+          ;; unload old, load new
+          ;;(unload-director)
           (assoc :director new-director)
           (load-director)))))
