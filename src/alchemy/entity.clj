@@ -4,10 +4,15 @@
 
 (defn new-triangle
   "creates a new triangle"
-  [[v1x v1y] [v2x v2y] [v3x v3y]]
+  [position]
   ;; store triangle vertices
   {:id (gensym)
    :type :triangle
-   :vertices [[v1x v1y 0]
-              [v2x v2y 0]
-              [v3x v3y 0]]})
+   :position position
+   :angle 0})
+
+(defn position
+  "gets the position of an entity at a given time"
+  [entity time]
+  ;; call the position fn with the current time
+  ((:position entity) time))
